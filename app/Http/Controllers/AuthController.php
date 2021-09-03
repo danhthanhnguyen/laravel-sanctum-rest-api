@@ -40,7 +40,7 @@ class AuthController extends Controller
         $user = User::where('email', $field['email'])->first();// get user by email
         // check password
         if(!$user || !Hash::check($field['password'], $user->password)) {
-            return response([
+            return response()->json([
                 'message' => 'Invalid user or password'
             ], 401);
         }
@@ -52,7 +52,7 @@ class AuthController extends Controller
             'token' => $token
         ];
 
-        return response($response, 201);
+        return response()->json($response, 201);
     }
 
     public function logout(Request $request) {
