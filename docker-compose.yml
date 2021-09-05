@@ -1,0 +1,60 @@
+version: "3"
+
+# Create networks
+networks:
+  tweet-network:
+    driver: bridge
+
+# Create volumes
+volumes:
+  database:
+    driver_opts:
+      device: ./docker-compose/mysql
+      type: none
+      o: bind
+  server:
+    driver_opts:
+      device: ./docker-compose/nginx
+      type: none
+      o: bind
+
+services:
+  app:
+    build:
+      args:
+        user: thanhnguyen
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: tweet-image
+    container_name: tweet-app
+    restart: always
+    working_dir: /var/www
+    volumes: 
+      - ./:/var/www
+    networks:
+      - tweet-network
+  db:
+    image: mysql:latest
+    container_name: tweet-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: "thanhnguyen"
+    volumes:
+      - database:/var/lib/mysql
+    networks:
+      - tweet-network
+  nginx:
+    image: nginx:alpine
+    container_name: tweet-nginx
+    restart: always
+    ports:
+      - 8000:80
+    volumes:
+      - ./:/var/www
+      - server:/etc/nginx/conf.d
+    networks:
+      - tweet-network
